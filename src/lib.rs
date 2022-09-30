@@ -13,7 +13,6 @@ use pyo3::prelude::PyObject;
 use pyo3::prelude::PyResult;
 use pyo3::prelude::Python;
 
-#[warn(unused_imports)]
 mod lens;
 
 /// A Python module implemented in Rust.
