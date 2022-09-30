@@ -1,45 +1,31 @@
 import numpy
 
-
 def apply_lens(py_img: numpy.ndarray, cx: float, cy: float, u: float) -> numpy.ndarray:
     """
     :param py_img: input image, shape must be [x size, y size, 3],
-    :type py_img: numpy.ndarray
-    :param cx: centre position of the wave in x - positions 0<x<1 will be accepted as (dimension / x)
-    :type cx: float
-    :param cy: centre position of the wave in y - positions 0<x<1 will be accepted as (dimension / x)
-    :type cy: float
+    :param cx: centre location of the wave function in x - positions 0<cx<1 will be treated as a fraction of the total image width
+    :param cy: centre location of the wave function in y - positions 0<cy<1 will be treated as a fraction of the total image height
     :param u: wave intensity
-    :type u: float
     :return: image with wave function applied
-    :rtype: numpy.ndarray
     """
     ...
-
 
 def in_rust_test():
     """
     prints time taken to compute a default lens - for testing purposes.
-    :return:
-    :rtype:
+    :return: None
     """
     ...
 
-
-def space(x, y, cx, cy, u) -> list[float]:
+def space(x: float, y: float, cx: float, cy: float, u: float) -> list[float]:
     """
-    test function for the spacial coordinates,
+    test function for the spacial coordinate function
 
     :param x: x coordinate
-    :type x: float
     :param y: y coordinate
-    :type y: float
     :param cx: centre position of the wave in x
-    :type cx: float
     :param cy: centre position of the wave in y
-    :type cy: float
     :param u: wave intensity
-    :type u: float
-    :return: new [x,y] position in list format
-    :rtype: list[float]
+    :return: new list[x,y] position
     """
+    ...
