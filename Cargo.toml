@@ -1,0 +1,19 @@
+[package]
+name = "py_lens"
+version = "0.1.0"
+edition = "2021"
+authors = ["Quiet-Clicking-Sounds <55921097+Quiet-Clicking-Sounds@users.noreply.github.com>"]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "py_lens"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.17.1", features = ["extension-module"] }
+ndarray = {version =  "0.15.6", features = ["rayon"]  }
+numpy = "0.17.2"
+image = "0.24.4"
+rayon = "1.5.3"
+cffi = "0.1.7"
