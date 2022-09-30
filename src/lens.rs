@@ -86,13 +86,14 @@ fn space_def_to_pos(spd: [f32; 2], mx: usize, my: usize) -> [usize; 2] {
 /// returns: ArrayBase<OwnedRepr<u8>, Dim<[usize; 3]>>
 ///
 pub fn apply_lens_rgb<'a>(image: &'a ArrayView3<'a, u8>, cx: f32, cy: f32, u: f32) -> Array3<u8> {
-    let (mx, my) = (image.shape()[0], image.shape()[1]);
+    let (mx, my) = (image.shape()[0]-1, image.shape()[1]-1);
     let im_shape: (usize, usize, usize) = (image.shape()[0], image.shape()[1], image.shape()[2]);
 
-    let cx = if cx < 1f32 { im_shape.0 as f32 * cx } else { cx };
-    let cy = if cy < 1f32 { im_shape.1 as f32 * cy } else { cy };
+    let cx = if cx <= 1f32 { im_shape.0 as f32 * cx }  else { cx };
+    let cy = if cy <= 1f32 { im_shape.1 as f32 * cy }  else { cy };
 
-    let mut indices: Array2<[usize; 2]> = Array2::from_shape_fn((mx, my), |(a, b)| { [a, b] });
+    let mut indices: Array2<[usize; 2]> = Array2::from_shape_fn((im_shape.0, im_shape.1),
+                                                                |(a, b)| { [a, b] });
 
     indices.par_map_inplace(|xy| {
         *xy = space_def_to_pos(space_def(xy[0] as f32, xy[1] as f32, cx, cy, u), mx, my)
