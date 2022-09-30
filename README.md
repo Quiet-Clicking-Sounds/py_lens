@@ -42,3 +42,24 @@ image_wave = py_lens.apply_lens(image, cx=1, cy=0.5, u=100)
 cv2.imshow('G1-1-05-100.jpeg', image_wave)
 cv2.waitKey()
 ```
+
+
+---
+
+Below is the 1 dimensional version of the 2d wave form used in `py_lens.apply_lens()` 
+where the x dimension is the distance between [x,y] and [cx,cy]. The wave function has rotational symmetry around the [cx,cy] point.
+<img src="images/1D wave form.png">
+
+
+---
+
+```python
+def apply_lens(py_img: numpy.ndarray, cx: float, cy: float, u: float) -> numpy.ndarray:
+    """    
+    :param py_img: input image, shape must be [x size, y size, 3],
+    :param cx: centre location of the wave function in x - positions 0<x<1 will be treated as a fraction of the total image width
+    :param cy: centre location of the wave function in y - positions 0<x<1 will be treated as a fraction of the total image height
+    :param u: wave intensity
+    :return: image with wave function applied
+    """
+```
