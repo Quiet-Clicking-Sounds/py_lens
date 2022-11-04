@@ -3,15 +3,9 @@ use std::time::Instant;
 use ndarray;
 use ndarray::Array3;
 use numpy;
-use numpy::PyArray3;
-use numpy::PyReadonlyArray3;
-use numpy::ToPyArray;
+use numpy::{PyArray3, PyReadonlyArray3, ToPyArray};
 use pyo3::IntoPy;
-use pyo3::prelude::pymodule;
-use pyo3::prelude::PyModule;
-use pyo3::prelude::PyObject;
-use pyo3::prelude::PyResult;
-use pyo3::prelude::Python;
+use pyo3::prelude::{pymodule, PyModule, PyObject, PyResult, Python};
 
 mod lens;
 
@@ -37,9 +31,9 @@ fn py_lens(_py: Python, _m: &PyModule) -> PyResult<()> {
         let now = Instant::now();
         let _v0 = lens::apply_lens_rgb(&an_array.view(), cx, cy, u);
         println!("lens Timed: ([{} ,{} ,{} ,u8], {} ,{} ,{}) : {}",
-                _w, _h, _d,
-                cx,cy,u,
-                now.elapsed().as_secs_f32()
+                 _w, _h, _d,
+                 cx, cy, u,
+                 now.elapsed().as_secs_f32()
         );
     }
 
