@@ -1,6 +1,6 @@
 [package]
 name = "py_lens"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 authors = ["Quiet-Clicking-Sounds <55921097+Quiet-Clicking-Sounds@users.noreply.github.com>"]
 
