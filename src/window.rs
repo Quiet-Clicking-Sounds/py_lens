@@ -1,17 +1,43 @@
 use std::thread;
-use ndarray::Array3;
-use ndarray::ArrayView;
-use ndarray::ArrayView3;
-use ndarray::AssignElem;
-use ndarray::Axis;
-use ndarray::Dim;
-use ndarray::Ix;
-use ndarray::Ix3;
-use ndarray::s;
-use ndarray::Shape;
+use ndarray::{
+    ArrayView3,
+    ArrayView,
+    Array3,
+    AssignElem,
+    Axis,
+    Dim,
+    Ix,
+    Ix3,
+    s,
+    Shape
+};
 
 use std::sync::mpsc;
 
+#[derive(Copy, Clone)]
+enum WindowShape{
+    Single(usize),
+    Double(usize,usize),
+    Triple(usize,usize,usize),
+}
+
+impl WindowShape {
+    fn array_size(self, ar: ArrayView3<u8>)-> (Shape<Dim<[Ix; 3]>>, Dim<[Ix; 3]>) {
+        let w = match self {
+            WindowShape::Single(a) => {(a,a,1)}
+            WindowShape::Double(a,b) => {(a,b,1)}
+            WindowShape::Triple(a,b,c) => {(a,b,c)}
+        };
+        let sh = ar.raw_dim();
+        let dim: Dim<[Ix; 3]> = Dim([
+            sh[0].saturating_sub(w.0.saturating_sub(1)),
+            sh[1].saturating_sub(w.1.saturating_sub(1)),
+            sh[2].saturating_sub(w.2.saturating_sub(1))
+        ]);
+
+        (Shape::from(dim), Dim([w.0,w.1,w.2]))
+    }
+}
 
 #[allow(dead_code)]
 const CORES: usize = 12;
@@ -80,42 +106,6 @@ pub mod window_apply_methods {
 
     pub fn average(w: ArrayView<u8, Ix3>) -> u8 {
         (w.sum() as f32 / w.len() as f32) as u8
-    }
-}
-
-pub mod window_apply_methods_general {
-    // would be nice to have this all work for u8 16 and u33 types, possibly also f32
-    // larger than that is meh
-    use ndarray::{ArrayView, Ix3};
-
-    pub fn stdev<F>(w: ArrayView<F, Ix3>) -> F
-        where F: Into<f32>, F: From<f32>, F: Clone
-    {
-        let w = w.mapv(|elem| elem.into());
-        let w = w.std(1f32);
-        w.into()
-    }
-
-    pub fn std_int<F>(w: ArrayView<F, Ix3>) -> F
-        where F: Into<f32>, F: From<f32>, F: Clone
-    {
-        let w = w.mapv(|elem| elem.into());
-        let len_inv = (w.len() as f32).recip();
-        let mean: f32 = w.iter().sum::<f32>() * len_inv;
-
-        let flt: f32 = w.iter()
-            .fold(0f32, |a, x| {
-                a + (*x - mean).abs().powi(2)
-            });
-
-        (flt * len_inv).sqrt().into()
-    }
-
-    pub fn average<F>(w: ArrayView<F, Ix3>) -> F
-        where F: Into<f32>, F: From<f32>, F: Clone, F: Copy, f32: From<F>
-    {
-        let f: f32 = w.iter().fold(0f32, |a, b| a + f32::from(*b));
-        (f / w.len() as f32).into()
     }
 }
 
@@ -308,22 +298,5 @@ mod tests {
         shitty_bench("u8sum".into(), u8sum);
     }
 
-    fn nst() {
-        use crate::window::window_apply_methods_general::std_int;
-        let sz: usize = 1080;
-        let a1 = generate_array3(sz, sz);
-        let a1sh = (a1.shape()[0], a1.shape()[1], a1.shape()[2]);
-        let window = 4;
 
-        println!("Total Pixels: {:?}", sz * sz);
-        let t1 = time::Instant::now();
-        let b1 = window::thread_apply_over_window(
-            a1, window,
-            std_int,
-        );
-        println!("Multi Thread stdev calc over window:{} | Timed: {:?}s | Shape: in: {:?}, out: {:?}",
-                 window,
-                 time::Instant::now().sub(t1).as_secs_f32(),
-                 a1sh, b1.shape());
-    }
 }

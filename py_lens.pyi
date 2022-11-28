@@ -47,3 +47,15 @@ def line_to_image(py_img:numpy.ndarray, shape0:int, shape1:int)-> numpy.ndarray:
     :return: 3d numpy array,
     """
     ...
+
+def windowed_stdev(py_img:numpy.ndarray, window_size:int)-> numpy.ndarray:
+    """
+    standard deviation over a windowed array, based on image processing, ignores the 3rd layer 
+    
+    :param py_img: 
+    :type py_img: 
+    :param window_size: 
+    :type window_size: 
+    :return: 
+    :rtype: 
+    """
