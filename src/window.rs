@@ -29,6 +29,9 @@ impl WindowShape {
             WindowShape::Double(a, b) => { (a, b, 1) }
             WindowShape::Triple(a, b, c) => { (a, b, c) }
         };
+        assert!(ar.shape()[0] >= w.0, "First Dimension of Array must be larger than of Window");
+        assert!(ar.shape()[1] >= w.1, "Second Dimension of Array must be larger than of Window");
+        assert!(ar.shape()[2] >= w.2, "Third Dimension of Array must be larger than of Window");
         let sh = ar.raw_dim();
         let dim: Dim<[Ix; 3]> = Dim([
             sh[0].saturating_sub(w.0.saturating_sub(1)),
@@ -46,6 +49,8 @@ impl WindowShape {
             WindowShape::Double(a, _) => a,
             WindowShape::Triple(a, _, _) => a,
         };
+        assert!(CORES < shape_0 - win_0, "Not enough splits for multithreading");
+        // TODO: Setup method of split even when CORES >  shape_0 - win_0.
         let v_split_size = (shape_0 - win_0.saturating_sub(1)) as f32 / CORES as f32;
         let split_shape = |c_: usize| -> (usize, usize) {
             let c = c_ as f32;
@@ -82,30 +87,6 @@ const F32U8MAX: f32 = u8::MAX as f32;
 
 #[allow(dead_code)]
 type WinFunc = fn(ArrayView<u8, Ix3>) -> u8;
-
-/// find the size of the new array after putting it through a windowed operation
-///
-/// # Arguments
-///
-/// * `ar`: array view
-/// * `d`: window shape (probably something like \[3,3,1] to only work on one sub-pixel of an image)
-///
-/// returns: (Shape<Dim<[usize; 3]>>, Dim<[usize; 3]>)
-///
-/// # Examples
-///
-/// ```
-///
-/// ```
-fn windowed_array_size(ar: ArrayView3<u8>, d: [Ix; 3]) -> (Shape<Dim<[Ix; 3]>>, Dim<[Ix; 3]>) {
-    let sh = ar.raw_dim();
-    let dim: Dim<[Ix; 3]> = Dim([
-        sh[0].saturating_sub(d[0].saturating_sub(1)),
-        sh[1].saturating_sub(d[1].saturating_sub(1)),
-        sh[2].saturating_sub(d[2].saturating_sub(1))
-    ]);
-    (Shape::from(dim), Dim(d))
-}
 
 
 pub mod window_apply_methods {
