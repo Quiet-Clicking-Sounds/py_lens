@@ -15,7 +15,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<WaveLine>()?;
     m.add_function(wrap_pyfunction!(image_to_line, m)?)?;
     m.add_function(wrap_pyfunction!(line_to_image, m)?)?;
-    m.add_function(wrap_pyfunction!(windowed_stdev, m)?)?;
+    // m.add_function(wrap_pyfunction!(windowed_stdev, m)?)?;
     // #[pyo3(text_signature = "(pt_x0, pt_y0, u, /)")]
     #[pyclass]
     struct WavePoint {
@@ -77,17 +77,17 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
         image_out.to_pyarray(py)
     }
 
-    
+
     #[pyfunction]
     fn windowed_stdev<'py>(py:Python<'py>, py_img: PyReadonlyArray3<u8>, window_size:usize)-> &'py PyArray3<u8>{
         let image_out = window::thread_apply_over_window(
-            py_img.to_owned_array(), 
-            window_size,
+            py_img.to_owned_array(),
+            window::WindowShape::Single(window_size),
             window::window_apply_methods::mystd
         );
         image_out.to_pyarray(py)
     }
-    
-    
+
+
     Ok(())
 }

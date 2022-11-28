@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use std::thread;
 use ndarray::{
     ArrayView3,
@@ -9,24 +10,24 @@ use ndarray::{
     Ix,
     Ix3,
     s,
-    Shape
+    Shape,
 };
 
 use std::sync::mpsc;
 
 #[derive(Copy, Clone)]
-enum WindowShape{
+pub enum WindowShape {
     Single(usize),
-    Double(usize,usize),
-    Triple(usize,usize,usize),
+    Double(usize, usize),
+    Triple(usize, usize, usize),
 }
 
 impl WindowShape {
-    fn array_size(self, ar: ArrayView3<u8>)-> (Shape<Dim<[Ix; 3]>>, Dim<[Ix; 3]>) {
+    pub fn array_size(self, ar: &Array3<u8>) -> (Shape<Dim<[Ix; 3]>>, Dim<[Ix; 3]>) {
         let w = match self {
-            WindowShape::Single(a) => {(a,a,1)}
-            WindowShape::Double(a,b) => {(a,b,1)}
-            WindowShape::Triple(a,b,c) => {(a,b,c)}
+            WindowShape::Single(a) => { (a, a, 1) }
+            WindowShape::Double(a, b) => { (a, b, 1) }
+            WindowShape::Triple(a, b, c) => { (a, b, c) }
         };
         let sh = ar.raw_dim();
         let dim: Dim<[Ix; 3]> = Dim([
@@ -35,7 +36,42 @@ impl WindowShape {
             sh[2].saturating_sub(w.2.saturating_sub(1))
         ]);
 
-        (Shape::from(dim), Dim([w.0,w.1,w.2]))
+        (Shape::from(dim), Dim([w.0, w.1, w.2]))
+    }
+
+    pub fn create_v_splits(self, arr: &Array3<u8>) -> Vec<(usize, usize)> {
+        let shape_0 = arr.shape()[0];
+        let win_0 = match self {
+            WindowShape::Single(a) => a,
+            WindowShape::Double(a, _) => a,
+            WindowShape::Triple(a, _, _) => a,
+        };
+        let v_split_size = (shape_0 - win_0.saturating_sub(1)) as f32 / CORES as f32;
+        let split_shape = |c_: usize| -> (usize, usize) {
+            let c = c_ as f32;
+            let a = c * v_split_size;
+            let b = (c + 1f32) * v_split_size;
+            // last split needs to grab any leftover stuff, this just makes sure rounding errors
+            // don't break things again, could be refactored out at some point
+
+            (
+                a.round() as usize,
+                if c_==CORES{shape_0} else { b.round() as usize + win_0.saturating_sub(1)}
+            )
+
+        };
+        let v_splits_for_array: Vec<_> = (0..CORES).map(split_shape).collect();
+        v_splits_for_array
+    }
+}
+
+impl Display for WindowShape {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            WindowShape::Single(a) => {write!(f, "({})", a)}
+            WindowShape::Double(a,b) => {write!(f, "({}, {})", a, b)}
+            WindowShape::Triple(a,b,c) => {write!(f, "({}, {}, {})", a, b, c)}
+        }
     }
 }
 
@@ -132,8 +168,8 @@ pub mod window_apply_methods {
 /// >>> [323,323,3]
 ///
 /// ```
-fn apply_over_window(arr: Array3<u8>, s: usize, func: WinFunc) -> Array3<u8> {
-    let (sh2, d) = windowed_array_size(arr.view(), [s, s, 1]);
+fn apply_over_window(arr: Array3<u8>, win_size: WindowShape, func: WinFunc) -> Array3<u8> {
+    let (sh2,d) = win_size.array_size(&arr);
     // create windowed parts of the array
     let win = arr.windows(d);
     // create an uninitiated base array for the output, shape descried by windowed_array_size
@@ -166,41 +202,28 @@ fn apply_over_window(arr: Array3<u8>, s: usize, func: WinFunc) -> Array3<u8> {
 /// ```
 ///
 /// ```
-pub fn thread_apply_over_window(input_array: Array3<u8>, window_size: usize, func: WinFunc) -> Array3<u8> {
-    let output_shape_deduction = window_size - 1;
-    // let input_array = input_array.into_shared();
-    let shape0 = input_array.shape()[0];
+pub fn thread_apply_over_window(input_array: Array3<u8>, win_size: WindowShape, func: WinFunc) -> Array3<u8> {
 
-    // generating splits, 1 split per core(thread) to minimize overhead
-    // entire thing could be removed and turned into a single core for each row returned
-    let v_split_size = (shape0 - output_shape_deduction) as f32 / CORES as f32;
-    let split_shape = |c_: usize| -> (usize, usize) {
-        let c = c_ as f32;
-        let a = c * v_split_size;
-        let b = (c + 1f32) * v_split_size;
-        // last split needs to grab any leftover stuff, this just makes sure rounding errors don't
-        // break things again, could be refactored out at some point
-        if c_ == CORES { (a.round() as usize, shape0) } else { (a.round() as usize, b.round() as usize) }
-    };
-    let v_splits_for_array: Vec<_> = (0..CORES).map(split_shape).collect();
+    // see WindowShape
+    let v_splits_for_array = win_size.create_v_splits(&input_array);
 
     // thread return items keeper. Reminder: order here is important,
     // I'm not sending ordering information
     let mut thread_workers: Vec<_> = vec![];
     for (va, vb) in v_splits_for_array {
         let (tx, rx) = mpsc::channel();
-        let send_copy_of_window_size = window_size; // I dont think this is required
+        //let send_copy_of_window_size = window_size; // I dont think this is required
 
         // create a slice view of the array before sending it
         let pre_compute_sliced_array = input_array
-            .slice(s![va..vb+output_shape_deduction,..,..]);
+            .slice(s![va..vb,..,..]);
         // needs ownership, probably possible to refactor that out
         let pre_compute_slice = pre_compute_sliced_array.to_owned();
         thread::spawn(move || {
             // thread open, do compute and send to `rx`
             let computed_array_output = apply_over_window(
                 pre_compute_slice,
-                send_copy_of_window_size,
+                win_size,
                 func);
             tx.send(computed_array_output).unwrap();
         });
@@ -229,6 +252,7 @@ mod tests {
     use crate::window;
     use std::time;
     use window::window_apply_methods::*;
+    use crate::window::WindowShape;
 
     static US_U8_MAX: usize = u8::MAX as usize;
 
@@ -253,7 +277,7 @@ mod tests {
         let a2 = generate_array3(sz, sz);
         let a2sh = (a2.shape()[0], a2.shape()[1], a2.shape()[2]);
 
-        let window = 6;
+        let window = WindowShape::Single(6);
 
         println!("Total Pixels: {:?}", sz * sz);
         let t1 = time::Instant::now();
@@ -297,6 +321,4 @@ mod tests {
         shitty_bench("mystd".into(), mystd);
         shitty_bench("u8sum".into(), u8sum);
     }
-
-
 }
