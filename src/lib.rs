@@ -17,7 +17,6 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(windowed_stdev_single, m)?)?;
     m.add_function(wrap_pyfunction!(windowed_stdev_double, m)?)?;
     m.add_function(wrap_pyfunction!(windowed_stdev_triple, m)?)?;
-    // #[pyo3(text_signature = "(pt_x0, pt_y0, u, /)")]
     #[pyclass]
     struct WavePoint {
         _tar: lens::WavePoint,
@@ -83,12 +82,12 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
         windowed_stdev(py, py_img, window_type)
     }
     #[pyfunction]
-    fn windowed_stdev_double<'py>(py: Python<'py>, py_img: PyReadonlyArray3<u8>, window_size: (usize,usize)) -> &'py PyArray3<u8> {
+    fn windowed_stdev_double<'py>(py: Python<'py>, py_img: PyReadonlyArray3<u8>, window_size: (usize, usize)) -> &'py PyArray3<u8> {
         let window_type = window::WindowShape::Double(window_size.0, window_size.1);
         windowed_stdev(py, py_img, window_type)
     }
     #[pyfunction]
-    fn windowed_stdev_triple<'py>(py: Python<'py>, py_img: PyReadonlyArray3<u8>, window_size: (usize,usize,usize)) -> &'py PyArray3<u8> {
+    fn windowed_stdev_triple<'py>(py: Python<'py>, py_img: PyReadonlyArray3<u8>, window_size: (usize, usize, usize)) -> &'py PyArray3<u8> {
         let window_type = window::WindowShape::Triple(window_size.0, window_size.1, window_size.2);
         windowed_stdev(py, py_img, window_type)
     }
@@ -97,7 +96,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
         let image_out = window::thread_apply_over_window(
             py_img.to_owned_array(),
             window_type,
-            window::window_apply_methods::mystd,
+            window::window_apply_methods::faster_stdev,
         );
         image_out.to_pyarray(py)
     }
