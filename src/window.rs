@@ -1,7 +1,6 @@
 use std::fmt::{Display, Formatter};
 use std::thread;
 use ndarray::{
-    ArrayView3,
     ArrayView,
     Array3,
     AssignElem,
@@ -15,6 +14,21 @@ use ndarray::{
 
 use std::sync::mpsc;
 
+///
+/// # Single(a)
+/// used for a moving window with dimensions `[a, a, 1]` useful for images
+///
+/// # Double(a, b)
+/// like Single, `[a, b, 1]` allows for rectangles
+///
+/// # Triple(a, b, c)
+/// complete control over all sizes of the window, `[a, b, c]`
+///
+///
+/// access to automatic sizing within using [`WindowShape::array_size`]
+///
+/// access to positional splits for threading using [`WindowShape::create_v_splits`]
+///
 #[derive(Copy, Clone)]
 pub enum WindowShape {
     Single(usize),
@@ -23,6 +37,21 @@ pub enum WindowShape {
 }
 
 impl WindowShape {
+    ///
+    ///
+    /// # Arguments
+    ///
+    /// * `ar`: input array, used to get the input shape
+    ///
+    /// returns: (Shape<Dim<[usize; 3]>>, Dim<[usize; 3]>)
+    ///
+    /// # PANIC
+    /// if any window size is greater than it's corresponding array size
+    ///
+    /// # Usage
+    ///
+    /// see: [`apply_over_window`]
+    ///
     pub fn array_size(self, ar: &Array3<u8>) -> (Shape<Dim<[Ix; 3]>>, Dim<[Ix; 3]>) {
         let w = match self {
             WindowShape::Single(a) => { (a, a, 1) }
@@ -34,6 +63,7 @@ impl WindowShape {
         assert!(ar.shape()[2] >= w.2, "Third Dimension of Array must be larger than of Window");
         let sh = ar.raw_dim();
         let dim: Dim<[Ix; 3]> = Dim([
+            // note brackets matter, this is a - (b - 1)  NOT (a - b) - 1 this would be bad
             sh[0].saturating_sub(w.0.saturating_sub(1)),
             sh[1].saturating_sub(w.1.saturating_sub(1)),
             sh[2].saturating_sub(w.2.saturating_sub(1))
@@ -42,6 +72,28 @@ impl WindowShape {
         (Shape::from(dim), Dim([w.0, w.1, w.2]))
     }
 
+
+    /// do not mix WindowShape instances
+    ///
+    /// # Arguments
+    ///
+    /// * `arr`: input array that will be used for window functions
+    ///
+    /// returns: Vec<(usize, usize), Global>
+    ///
+    /// # Errors:
+    /// will panic if:
+    /// ``` rust
+    /// CORES > arr.shape()[0] - WindowShape[0]]
+    /// ```
+    ///
+    /// # Examples
+    ///
+    /// See code for: [`thread_apply_over_window`]
+    ///
+    /// ``` rust
+    /// let v_splits_for_array = win_size.create_v_splits(&input_array);
+    /// ```
     pub fn create_v_splits(self, arr: &Array3<u8>) -> Vec<(usize, usize)> {
         let shape_0 = arr.shape()[0];
         let win_0 = match self {
@@ -61,9 +113,8 @@ impl WindowShape {
 
             (
                 a.round() as usize,
-                if c_==CORES{shape_0} else { b.round() as usize + win_0.saturating_sub(1)}
+                if c_ == CORES { shape_0 } else { b.round() as usize + win_0.saturating_sub(1) }
             )
-
         };
         let v_splits_for_array: Vec<_> = (0..CORES).map(split_shape).collect();
         v_splits_for_array
@@ -73,9 +124,9 @@ impl WindowShape {
 impl Display for WindowShape {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            WindowShape::Single(a) => {write!(f, "({})", a)}
-            WindowShape::Double(a,b) => {write!(f, "({}, {})", a, b)}
-            WindowShape::Triple(a,b,c) => {write!(f, "({}, {}, {})", a, b, c)}
+            WindowShape::Single(a) => { write!(f, "({})", a) }
+            WindowShape::Double(a, b) => { write!(f, "({}, {})", a, b) }
+            WindowShape::Triple(a, b, c) => { write!(f, "({}, {}, {})", a, b, c) }
         }
     }
 }
@@ -108,7 +159,7 @@ pub mod window_apply_methods {
     }
 
     /// slightly faster than the ndarray stdev, need to test more, but I like this one more...
-    pub fn mystd(w: ArrayView<u8, Ix3>) -> u8 {
+    pub fn faster_stdev(w: ArrayView<u8, Ix3>) -> u8 {
         let w = w.mapv(|elem| elem as f32);
         let len_inv = (w.len() as f32).recip();
         let mean: f32 = w.iter().sum::<f32>() * len_inv;
@@ -144,13 +195,13 @@ pub mod window_apply_methods {
 /// arr = Array3::from_image(image)
 /// arr.shape()
 /// >>> [325,325,3]
-/// ar2 = apply_over_window(arr, 3, window::stdev)
+/// ar2 = apply_over_window(arr, WindowShape::Single(3), window::stdev)
 /// ar2.shape()
 /// >>> [323,323,3]
 ///
 /// ```
 fn apply_over_window(arr: Array3<u8>, win_size: WindowShape, func: WinFunc) -> Array3<u8> {
-    let (sh2,d) = win_size.array_size(&arr);
+    let (sh2, d) = win_size.array_size(&arr);
     // create windowed parts of the array
     let win = arr.windows(d);
     // create an uninitiated base array for the output, shape descried by windowed_array_size
@@ -167,13 +218,13 @@ fn apply_over_window(arr: Array3<u8>, win_size: WindowShape, func: WinFunc) -> A
 /// run n threads to compute the given function over a moving window of the array
 ///
 /// Thread count: 12 on 12 thread cpu using stdev calulation over |  Total Pixels: 16777216
-/// > Multi Thread stdev calc over window:6 | Timed: 2.468437s | Shape: in: (4096, 4096, 3), out: [4091, 4091, 3]
-/// > Single Thread stdev calc over window:6 | Timed: 15.678387s | Shape: in: (4096, 4096, 3), out: [4091, 4091, 3]
+///  Multi Thread stdev calc over window:6 | Timed: 2.468437s | Shape: in: (4096, 4096, 3), out: [4091, 4091, 3]
+///  Single Thread stdev calc over window:6 | Timed: 15.678387s | Shape: in: (4096, 4096, 3), out: [4091, 4091, 3]
 ///
 /// # Arguments
 ///
 /// * `input_array`:  3 dimensional array, image format (width, height, colour_value)
-/// * `window_size`:  size of moving window [s,s,1] (ignores z-depth of array for image editing purposes)
+/// * `window_size`:  [`WindowShape`]
 /// * `func`:  fn(Array3<u8>)->u8
 ///
 /// returns: ArrayBase<OwnedRepr<u8>, Dim<[usize; 3]>>
@@ -264,7 +315,7 @@ mod tests {
         let t1 = time::Instant::now();
         let b1 = window::thread_apply_over_window(
             a1, window,
-            mystd,
+            faster_stdev,
         );
         println!("Multi Thread stdev calc over window:{} | Timed: {:?}s | Shape: in: {:?}, out: {:?}",
                  window,
@@ -274,7 +325,7 @@ mod tests {
         let t1 = time::Instant::now();
         let b2 = window::apply_over_window(
             a2, window,
-            mystd,
+            faster_stdev,
         );
         println!("Single Thread stdev calc over window:{} | Timed: {:?}s | Shape: in: {:?}, out: {:?}",
                  window,
@@ -299,7 +350,7 @@ mod tests {
             println!("Timed: {:^12} - {:>12?}ns", name, time::Instant::now().sub(t1).as_nanos());
         }
         shitty_bench("stdev".into(), stdev);
-        shitty_bench("mystd".into(), mystd);
+        shitty_bench("mystd".into(), faster_stdev);
         shitty_bench("u8sum".into(), u8sum);
     }
 }
