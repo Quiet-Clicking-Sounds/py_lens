@@ -1,31 +1,49 @@
 import numpy
 
-def apply_lens(py_img: numpy.ndarray, cx: float, cy: float, u: float) -> numpy.ndarray:
+
+
+
+class WaveLine:
+    def __init__(self, ctr_x: float, ctr_y: float, angle: float, u: float):
+        """
+
+        :param ctr_x: pixel centre position
+        :param ctr_y: pixel centre position
+        :param angle: angle in radians
+        :param u:
+        """
+        ...
+    def apply_wave(self, py_img: numpy.ndarray):
+        """
+        :param py_img: image as array, expects shape() = (x,y,3)
+        """
+        ...
+class WavePoint:
+    def __init__(self, ctr_x:float, ctr_y:float, u:float):
+        """
+
+        :param ctr_x: pixel centre position
+        :param ctr_y: pixel centre position
+        :param u:
+        """
+        ...
+    def apply_wave(self, py_img: numpy.ndarray):
+        """
+        :param py_img: image as array, expects shape() = (x,y,3)
+        """
+        ...
+
+def image_to_line(py_img:numpy.ndarray)-> numpy.ndarray:
     """
-    :param py_img: input image, shape must be [x size, y size, 3],
-    :param cx: centre location of the wave function in x - positions 0<cx<1 will be treated as a fraction of the total image width
-    :param cy: centre location of the wave function in y - positions 0<cy<1 will be treated as a fraction of the total image height
-    :param u: wave intensity
-    :return: image with wave function applied
+    :param py_img: 3d numpy array
+    :return: 2d numpy array,
     """
     ...
-
-def in_rust_test():
+def line_to_image(py_img:numpy.ndarray, shape0:int, shape1:int)-> numpy.ndarray:
     """
-    prints time taken to compute a default lens - for testing purposes.
-    :return: None
-    """
-    ...
-
-def space(x: float, y: float, cx: float, cy: float, u: float) -> list[float]:
-    """
-    test function for the spacial coordinate function
-
-    :param x: x coordinate
-    :param y: y coordinate
-    :param cx: centre position of the wave in x
-    :param cy: centre position of the wave in y
-    :param u: wave intensity
-    :return: new list[x,y] position
+    :param shape1:  shape of output image (should be the same as what was put into image_to_line)
+    :param shape0:  shape of output image (should be the same as what was put into image_to_line)
+    :param py_img: 2d numpy array
+    :return: 3d numpy array,
     """
     ...

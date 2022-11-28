@@ -72,3 +72,4 @@ docs/_build/
 .python-version
 # Project exclude paths
 /python/
+/.github/

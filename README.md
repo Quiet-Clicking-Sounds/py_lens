@@ -4,8 +4,8 @@ Rust based python package to apply a wave distortion filter to an image.
 <table>
 <tr>
 <td>Base image</td>
-<td>apply_lens(image, cx=0, cy=0, u=25)</td>
-<td>apply_lens(image, cx=1, cy=0.5, u=100)</td>
+<td>apply_lens(image, cx=0, cy=0, U=25)</td>
+<td>apply_lens(image, cx=1, cy=0.5, U=100)</td>
 </tr>
 <tr>
 <td>
@@ -38,7 +38,7 @@ import cv2
 import numpy
 
 image: numpy.ndarray = cv2.imread(r"/images/G1.jpg", cv2.IMREAD_COLOR)
-image_wave = py_lens.apply_lens(image, cx=1, cy=0.5, u=100)
+image_wave = py_lens.apply_lens(image, cx=1, cy=0.5, U=100)
 cv2.imshow('G1-1-05-100.jpeg', image_wave)
 cv2.waitKey()
 ```
@@ -54,12 +54,12 @@ where the x dimension is the distance between [x,y] and [cx,cy]. The wave functi
 ---
 
 ```python
-def apply_lens(py_img: numpy.ndarray, cx: float, cy: float, u: float) -> numpy.ndarray:
+def apply_lens(py_img: numpy.ndarray, cx: float, cy: float, U: float) -> numpy.ndarray:
     """    
     :param py_img: input image, shape must be [x size, y size, 3],
     :param cx: centre location of the wave function in x - positions 0<x<1 will be treated as a fraction of the total image width
     :param cy: centre location of the wave function in y - positions 0<x<1 will be treated as a fraction of the total image height
-    :param u: wave intensity
+    :param U: wave intensity
     :return: image with wave function applied
     """
 ```

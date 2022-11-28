@@ -143,6 +143,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fast_hilbert"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8ec2bbe15af87954c739e236021f4411766c0f2b9c4a5f0b9317bcf6048ebf8"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -475,8 +484,9 @@ dependencies = [
 
 [[package]]
 name = "py_lens"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
+ "fast_hilbert",
  "image",
  "ndarray",
  "numpy",
