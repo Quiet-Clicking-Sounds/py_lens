@@ -48,14 +48,28 @@ def line_to_image(py_img:numpy.ndarray, shape0:int, shape1:int)-> numpy.ndarray:
     """
     ...
 
-def windowed_stdev(py_img:numpy.ndarray, window_size:int)-> numpy.ndarray:
+
+def windowed_stdev_single(py_img: numpy.ndarray, window_size: int) -> numpy.ndarray:
     """
-    standard deviation over a windowed array, based on image processing, ignores the 3rd layer 
-    
-    :param py_img: 
-    :type py_img: 
-    :param window_size: 
-    :type window_size: 
-    :return: 
-    :rtype: 
+    standard deviation over a windowed array, based on image processing, ignores the 3rd layer
+
+    :param py_img: input image, must be a numpy.ndarray with 3 dimensions `len(array.shape)==3`
+    :param window_size: window size, this will create a moiving window of shape [w,w,1] to traverse the array
+    :return: numpy array with dimensions of the input[x,y,z] - [w-1, w-1, 0]
+    """
+def windowed_stdev_double(py_img:numpy.ndarray, window_size:tuple[int,int])-> numpy.ndarray:
+    """
+    standard deviation over a windowed array, based on image processing, ignores the 3rd layer
+
+    :param py_img: input image, must be a numpy.ndarray with 3 dimensions `len(array.shape)==3`
+    :param window_size: window size, this will create a moiving window of shape [w0,w1,1] to traverse the array
+    :return: numpy array with dimensions of the input[x,y,z] - [w0-1, w1-1, 0]
+    """
+def windowed_stdev_triple(py_img:numpy.ndarray, window_size:tuple[int,int,int])-> numpy.ndarray:
+    """
+    standard deviation over a windowed array,
+
+    :param py_img: input image, must be a numpy.ndarray with 3 dimensions `len(array.shape)==3`
+    :param window_size: window size, this will create a moiving window of shape [w0,w1,w2] to traverse the array
+    :return: numpy array with dimensions of the input[x,y,z] - [w0-1, w1-1, w2-1]
     """
