@@ -11,14 +11,15 @@ name = "py_lens"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.17.1", features = ["extension-module"] }
+pyo3 = { version = "0.17.3", features = ["extension-module"] }
 ndarray = {version =  "0.15.6", features = ["rayon"]  }
 numpy = "0.17.2"
-image = "0.24.4"
 rayon = "1.5.3"
 fast_hilbert = "2.0.0"
+num-traits = "0.2.15"
 
-
+[dev-dependencies]
+rand = "0.8.5"
 
 [profile.dev]
 opt-level = 3
