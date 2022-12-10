@@ -1,4 +1,7 @@
+# ignore most of the created items in target
 /target
+# allow wheels
+!/target/wheels
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -73,3 +76,4 @@ docs/_build/
 # Project exclude paths
 /python/
 /.github/
+/benches/
