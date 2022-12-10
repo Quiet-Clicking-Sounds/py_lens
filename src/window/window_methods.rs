@@ -113,7 +113,7 @@ pub fn faster_rms_u64_adding<T: NumConv>(w: ArrayView<T, Ix3>) -> T {
 #[cfg(test)]
 mod tests {
     use crate::window;
-    use ndarray::{Array3, Array4};
+    use ndarray::Array3;
     use window::window_methods::*;
 
     use std::collections::hash_map::DefaultHasher;
@@ -122,10 +122,6 @@ mod tests {
 
     fn not_a_hash((a, b, c): (usize, usize, usize)) -> u8 {
         ((476579u64 % (a * b * c + 1) as u64) % 256) as u8
-    }
-
-    fn generate_array4() -> Array4<u8> {
-        Array4::from_shape_fn((1000, 8, 8, 1), |(a, b, c, d)| not_a_hash((b, c, d)))
     }
 
     fn generate_array3() -> Array3<u8> {

@@ -2,7 +2,6 @@ use numpy::{PyArray2, PyArray3, PyReadonlyArray2, PyReadonlyArray3, ToPyArray};
 use pyo3::prelude::{pyfunction, pymodule};
 use pyo3::prelude::{PyModule, PyResult, Python};
 use pyo3::wrap_pyfunction;
-use pyo3::prelude::*;
 mod array_reshape;
 mod lens;
 mod window;
@@ -38,6 +37,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
     }
     //#[pyfunction]
     // this is unimplemented
+    #[allow(dead_code)]
     fn wave_line<'py>(
         py: Python<'py>,
         py_img: PyReadonlyArray3<u8>,

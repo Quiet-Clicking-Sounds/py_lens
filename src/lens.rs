@@ -107,7 +107,7 @@ where
     });
     out_img
 }
-
+#[allow(dead_code)]
 /// old, but it does work
 ///
 /// # Arguments
@@ -221,6 +221,7 @@ mod tests {
     }
 
     //#[test]
+    #[allow(dead_code)]
     fn test_trait_line_lens_rgb() {
         let cx = (0f64, 0f64);
         let _cy = (10f64, 7f64);
@@ -234,6 +235,5 @@ mod tests {
         arr.hash(&mut hasher);
         todo!();
 
-        assert_eq!(0, hasher.finish());
     }
 }

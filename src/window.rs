@@ -1,4 +1,12 @@
-use ndarray::{s, Array3, ArrayView, AssignElem, Axis, Dim, Ix, Ix3, Shape};
+use ndarray::Array3;
+use ndarray::s;
+
+use ndarray::AssignElem;
+use ndarray::Axis;
+use ndarray::Dim;
+use ndarray::Ix;
+
+use ndarray::Shape;
 use num_traits::identities::Zero;
 use std::fmt::{Display, Formatter};
 use std::sync::mpsc;
@@ -129,6 +137,7 @@ impl WindowShape {
         let v_splits_for_array: Vec<_> = (0..CORES).map(split_shape).collect();
         v_splits_for_array
     }
+    #[allow(dead_code)]
     fn window_size(self) -> usize {
         match self {
             WindowShape::Single(a) => a * a,
@@ -268,24 +277,21 @@ mod tests {
     use window::window_methods::*;
 
     fn generate_tst_array3u8() -> Array3<u8> {
-        let a = Array3::from_shape_fn((500, 500, 3), |(a, b, c): (usize, usize, usize)| {
+        Array3::from_shape_fn((500, 500, 3), |(a, b, c): (usize, usize, usize)| {
             (a ^ b ^ c) as u8
-        });
-        a
+        })
     }
 
     fn generate_tst_array3u16() -> Array3<u16> {
-        let a = Array3::from_shape_fn((500, 500, 3), |(a, b, c): (usize, usize, usize)| {
+        Array3::from_shape_fn((500, 500, 3), |(a, b, c): (usize, usize, usize)| {
             (a ^ b ^ c) as u16
-        });
-        a
+        })
     }
 
     fn generate_tst_array3u32() -> Array3<u32> {
-        let a = Array3::from_shape_fn((500, 500, 3), |(a, b, c): (usize, usize, usize)| {
+        Array3::from_shape_fn((500, 500, 3), |(a, b, c): (usize, usize, usize)| {
             (a ^ b ^ c) as u32
-        });
-        a
+        })
     }
 
     use std::collections::hash_map::DefaultHasher;

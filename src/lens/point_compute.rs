@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use num_traits::{abs, FloatConst};
+use num_traits::{FloatConst};
 
 fn apply_rt_sgn_sq(hyp: f64) -> f64 {
     ((hyp.abs()).sqrt()).sin().powi(2).copysign(hyp)
@@ -44,6 +43,7 @@ impl Scale {
     pub fn mul(&self, x: f64) -> f64 {
         x * self._m
     }
+    #[allow(dead_code)]
     ///
     /// Returns (x / scale)  (uses inverse multiplication)
     ///
@@ -58,6 +58,8 @@ pub struct StarPattern{
     ctr: (f64, f64),
     ctr_x: f64,
     ctr_y: f64,
+    // TODO: fix star pattern implementation
+    #[allow(dead_code)]
     pts: usize,
     pt_ang:f64,
     s: Scale,
@@ -80,13 +82,13 @@ impl ComputePoint for StarPattern{
         let ya = y - self.ctr_y;
 
         let atan = ya.atan2(xa);
-        let sico = atan.sin_cos();
+        let sco = atan.sin_cos();
         let qfactor  = (atan.div_euclid(self.pt_ang) - self.pt_ang).abs() * self.u;
         let ang = (self.pt_ang).sin_cos();
 
         (
-            qfactor * sico.1 * ang.1 + x, // this is not correct
-            qfactor * sico.0 * ang.0 + y // this is not correct
+            qfactor * sco.1 * ang.1 + x, // this is not correct
+            qfactor * sco.0 * ang.0 + y // this is not correct
         )
 
     }
