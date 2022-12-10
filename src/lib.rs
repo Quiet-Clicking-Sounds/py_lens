@@ -2,10 +2,11 @@ use numpy::{PyArray2, PyArray3, PyReadonlyArray2, PyReadonlyArray3, ToPyArray};
 use pyo3::prelude::{pyfunction, pymodule};
 use pyo3::prelude::{PyModule, PyResult, Python};
 use pyo3::wrap_pyfunction;
-
+use pyo3::prelude::*;
 mod array_reshape;
 mod lens;
 mod window;
+
 
 /// A Python module implemented in Rust.
 #[pymodule]
@@ -23,7 +24,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(windowed_stdev_triple, m)?)?;
 
     #[pyfunction]
-    #[pyo3(text_signature = "(py_img, ctr_x, ctr_y, u, /)")]
+    #[pyo3(text_signature = "(py_img:numpy.ndarray, ctr_x:float, ctr_y:float, u:float, /)")]
     fn wave_point<'py>(
         py: Python<'py>,
         py_img: PyReadonlyArray3<u8>,
@@ -50,7 +51,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
         img_out.to_pyarray(py)
     }
     #[pyfunction]
-    #[pyo3(text_signature = "(py_img, ctr_x, ctr_y, point_count, u, /)")]
+    #[pyo3(text_signature = "(py_img:numpy.ndarray, ctr_x:float, ctr_y:float, point_count:int, u:float, /)")]
     fn star_pattern<'py>(
         py: Python<'py>,
         py_img: PyReadonlyArray3<u8>,
@@ -71,7 +72,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
     }
 
     #[pyfunction]
-    #[pyo3(text_signature = "(py_img, shape0, shape1 /)")]
+    #[pyo3(text_signature = "(py_img:numpy.ndarray, shape0, shape1 /)")]
     fn line_to_image<'py>(
         py: Python<'py>,
         py_img: PyReadonlyArray2<u8>,
@@ -84,7 +85,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
     }
 
     #[pyfunction]
-    #[pyo3(text_signature = "(py_img, window_size, /)")]
+    #[pyo3(text_signature = "(py_img:numpy.ndarray, window_size:int, /)")]
     fn windowed_rms_single<'py>(
         py: Python<'py>,
         py_img: PyReadonlyArray3<u8>,
@@ -95,7 +96,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
     }
 
     #[pyfunction]
-    #[pyo3(text_signature = "(py_img, window_size, /)")]
+    #[pyo3(text_signature = "(py_img:numpy.ndarray, window_size:(int,int), /)")]
     fn windowed_rms_double<'py>(
         py: Python<'py>,
         py_img: PyReadonlyArray3<u8>,
@@ -105,7 +106,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
         windowed_rms(py, py_img, window_type)
     }
     #[pyfunction]
-    #[pyo3(text_signature = "(py_img, window_size, /)")]
+    #[pyo3(text_signature = "(py_img:numpy.ndarray, window_size:(int,int,int), /)")]
     fn windowed_rms_triple<'py>(
         py: Python<'py>,
         py_img: PyReadonlyArray3<u8>,
@@ -116,7 +117,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
     }
 
     #[pyfunction]
-    #[pyo3(text_signature = "(py_img, window_size, ddof1, /)")]
+    #[pyo3(text_signature = "(py_img:numpy.ndarray, window_size:int, ddof1:bool, /)")]
     fn windowed_stdev_single<'py>(
         py: Python<'py>,
         py_img: PyReadonlyArray3<u8>,
@@ -127,7 +128,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
         windowed_stdev(py, py_img, window_type, ddof1)
     }
     #[pyfunction]
-    #[pyo3(text_signature = "(py_img, window_size, ddof1, /)")]
+    #[pyo3(text_signature = "(py_img:numpy.ndarray, window_size:(int,int), ddof1:bool, /)")]
     fn windowed_stdev_double<'py>(
         py: Python<'py>,
         py_img: PyReadonlyArray3<u8>,
@@ -138,7 +139,7 @@ fn py_lens(_py: Python, m: &PyModule) -> PyResult<()> {
         windowed_stdev(py, py_img, window_type, ddof1)
     }
     #[pyfunction]
-    #[pyo3(text_signature = "(py_img, window_size, ddof1, /)")]
+    #[pyo3(text_signature = "(py_img:numpy.ndarray, window_size:(int,int,int), ddof1:bool, /)")]
     fn windowed_stdev_triple<'py>(
         py: Python<'py>,
         py_img: PyReadonlyArray3<u8>,

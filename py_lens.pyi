@@ -3,7 +3,6 @@ import numpy
 
 def wave_point(py_img: numpy.ndarray, ctr_x: float, ctr_y: float, u: float) -> numpy.ndarray:
     """
-
     :param py_img: image as array, expects shape() = (x,y,3)
     :param ctr_x: pixel centre position
     :param ctr_y: pixel centre position

@@ -44,7 +44,7 @@ Rust based python package to apply a wave distortion filter to an image.
 ### Running in python
 
 ```python
-import py_lens
+import __main__
 import cv2
 import numpy
 
