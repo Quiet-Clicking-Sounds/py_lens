@@ -3,32 +3,43 @@ Rust based python package to apply a wave distortion filter to an image.
 
 <table>
 <tr>
-<td>Base image</td>
-<td>apply_lens(image, cx=0, cy=0, U=25)</td>
-<td>apply_lens(image, cx=1, cy=0.5, U=100)</td>
+<td width="33%">Base image</td>
+<td width="33%">wave_point(image, cx=0.75, cy=0.75, u=0.2)</td>
+<td width="33%">wave_point(image, cx=1, cy=0.5, u=0.07)</td>
 </tr>
 <tr>
-<td>
-<img src="images/G1.jpg">
-</td>
-<td>
-<img src="images/G1-0-0-25.jpeg">
-</td>
-<td>
-<img src="images/G1-1-05-100.png">
-</td>
+
+<td><img src="images/G1.jpg"></td>
+<td><img src="images/G1-wave-0.75-0.75-0.2.jpg"></td>
+<td><img src="images/G1-wave-1-0.5-0.07.jpg"></td>
+
+
 </tr>
 <tr>
 <td>Base image without modification <br> Created in GIMP</td>
 <td>Wave starts in top left (0,0 position) with 25x strength</td>
 <td>Wave starts in the lower centre position (900px&nbsp;down, 450px&nbsp;across) with a 100x&nbsp;strength modifier</td>
 </tr>
+<tr><td colspan="3"></td> </tr>
+
+<tr>
+<td>Base image</td>
+<td>windowed_rms_single(image, window_size=12)</td>
+<td>windowed_stdev_single(image, window_size=32, ddof1=True)</td>
+</tr>
+<tr>
+<td><img src="images/H5.jpg"></td>
+<td><img src="images/H5-w_rms-12.jpg"></td>
+<td><img src="images/H5-w_stdev-32-1.jpg"></td>
+</tr>
+
 
 </table>
 
 
+
 ### Building with maturin
-` maturin build --bindings cffi `
+` maturin build -f -r -b cffi ` 
 
 ### Running in python
 
